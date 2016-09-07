@@ -13,13 +13,14 @@ public class GameController : MonoBehaviour {
     Vector2 currentPos;
 
     int touchCount;
+    
     void Start()
     {
-        GameManager.instance.GameLoopingSet(GameSetting.GameStart);
+        GameManager.instance.GameLoopingSet(GameSetting.GameStart); //게임이 시작했다면 나중에 수정.
         Moves = false;
         startPos = transform.position;
     }
-	// Update is called once per frame
+
 	void Update ()
     {
         h = Input.GetAxisRaw("Horizontal");
@@ -39,23 +40,35 @@ public class GameController : MonoBehaviour {
     {
         if (h == -1) //가로
         {
-            transform.DOMoveX(transform.position.x - 1, 0);
-            Moves = false;
+            if(transform.position.x >= startPos.x)
+            {
+                transform.DOMoveX(transform.position.x - 1, 0.1f);
+                Moves = false;
+            }
         }
         if (h == 1) //가로
         {
-            transform.DOMoveX(transform.position.x + 1, 0);
-            Moves = false;
+            if(transform.position.x <= startPos.x)
+            {
+                transform.DOMoveX(transform.position.x + 1, 0.1f);
+                Moves = false;
+            }
         }
         if(v == 1)
         {
-            transform.DOMoveY(transform.position.y + 1, 0);
-            Moves = false;
+            if(transform.position.y <= startPos.y)
+            {
+                transform.DOMoveY(transform.position.y + 1, 0.1f);
+                Moves = false;
+            }
         }
         if(v == -1)
         {
-            transform.DOMoveY(transform.position.y - 1, 0);
-            Moves = false;
+            if(transform.position.y >= startPos.y)
+            {
+                transform.DOMoveY(transform.position.y - 1, 0.1f);
+                Moves = false;
+            }
         }
     }
 }
