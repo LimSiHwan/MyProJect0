@@ -10,7 +10,7 @@ public enum GameSetting
     GameSet
 }
 
-public class GameManager : MonoBehaviour {
+public class GameManager : MonoBehaviour{
 
     private static GameManager _instance;
     public static GameManager instance
@@ -18,13 +18,16 @@ public class GameManager : MonoBehaviour {
         get
         {
             if(_instance == null)
-            {
-                _instance = new GameManager();
-            }
+                Debug.LogError("cSingleton == null");
+
             return _instance;
         }
     }
     
+    void Awake()
+    {
+        _instance = this;
+    }
     const int StartPosX = 0;
     const int StartPosY = 0;
 
@@ -35,6 +38,22 @@ public class GameManager : MonoBehaviour {
 
     public GameSetting gameSetting;
 
+
+    GameObject dotBlueTemp; //dotblue를 담는 부모오브젝트
+
+    Vector2[] dotBluePosition =
+    {
+        new Vector2(0,0),
+        new Vector2(1,0),
+        new Vector2(-1,0),
+        new Vector2(1,1),
+        new Vector2(-1,-1),
+        new Vector2(0,1),
+        new Vector2(0,-1),
+        new Vector2(-1,1),
+        new Vector2(1,-1)
+    };
+
 	void Start ()
     {
         if(gameSetting == GameSetting.GameInit)
@@ -44,8 +63,12 @@ public class GameManager : MonoBehaviour {
     {
         GameObject goTemp = Instantiate(Background) as GameObject;
         GameObject goTemp_tile = Instantiate(tile) as GameObject;
+        dotBlueTemp = Instantiate(Resources.Load("dotBlueTemp")) as GameObject;
+
         goTemp.transform.parent = MainCam.gameObject.transform;
         goTemp_tile.transform.parent = goTemp.transform;
+        dotBlueTemp.transform.parent = MainCam.gameObject.transform;
+
         Player = Instantiate(Player, new Vector2(StartPosX, StartPosY), Quaternion.identity) as GameObject;
         Player.AddComponent<GameController>();
     }
@@ -70,5 +93,9 @@ public class GameManager : MonoBehaviour {
     void gameStart()
     {
         Debug.Log("=====게임 시작=======");
+
+        ObjectPool.DotBlueCapacity = 1;
+        ObjectPool.CreateObject("dotBlue", dotBlueTemp);
+        ObjectPool.Instantiate("dotBlue", dotBluePosition[Random.Range(0, 9)], Quaternion.identity);
     }
 }
