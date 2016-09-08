@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public enum GameSetting
 {
@@ -54,7 +55,14 @@ public class GameManager : MonoBehaviour{
         new Vector2(1,-1)
     };
 
-	void Start ()
+    List<int> randomList = new List<int>();
+    int dotBluePositionRandom = 0;
+    bool playingFirst = false;
+
+    int NextPosition;
+    int NextPositionTemp;
+
+    void Start ()
     {
         if(gameSetting == GameSetting.GameInit)
             init();
@@ -83,12 +91,25 @@ public class GameManager : MonoBehaviour{
                 gameStart();
                 break;
             case GameSetting.GamePlaying:
+                StartCoroutine(gamePlaying());
                 break;
             case GameSetting.GameSet:
+                gameSet();
                 break;
             case GameSetting.GamePause:
+                gamePause();
                 break;
         }
+    }
+    private int RandomFunction(int preRandom)
+    {
+        for(int i = 0; i < 9; i++)
+        {
+            randomList.Add(i);
+        }
+        randomList.Remove(preRandom);
+        int nextRandom = Random.Range(randomList[0], randomList[randomList.Count - 1]);
+        return nextRandom;
     }
     void gameStart()
     {
@@ -96,6 +117,29 @@ public class GameManager : MonoBehaviour{
 
         ObjectPool.DotBlueCapacity = 1;
         ObjectPool.CreateObject("dotBlue", dotBlueTemp);
-        ObjectPool.Instantiate("dotBlue", dotBluePosition[Random.Range(0, 9)], Quaternion.identity);
+        dotBluePositionRandom = RandomFunction(Random.Range(0, 9));
+        ObjectPool.Instantiate("dotBlue", dotBluePosition[dotBluePositionRandom], Quaternion.identity);
+        playingFirst = true;
+    }
+    IEnumerator gamePlaying()
+    {
+        Debug.Log("======게임 실행중========");
+        yield return new WaitForSeconds(0.5f);
+        if (playingFirst)
+            NextPosition = RandomFunction(dotBluePositionRandom);
+        else
+            NextPosition = RandomFunction(NextPositionTemp);
+
+        NextPositionTemp = NextPosition;
+        ObjectPool.Instantiate("dotBlue", dotBluePosition[NextPosition], Quaternion.identity);
+    }
+    void gameSet()
+    {
+
+    }
+
+    void gamePause()
+    {
+
     }
 }

@@ -4,18 +4,18 @@ using System.Collections;
 public class dotBlue : MonoBehaviour {
     
     const int dotSpeed = 3;
-
-    void Start()
+    
+    void Update()
     {
-        StartCoroutine(dotBlueRotation());
+        transform.Rotate(Vector3.forward * dotSpeed);
     }
 
-    IEnumerator dotBlueRotation()
+    void OnTriggerEnter2D(Collider2D col)
     {
-        while (true)
+        if (col.gameObject.CompareTag("Player"))
         {
-            transform.Rotate(Vector3.forward * dotSpeed);
-            yield return new WaitForEndOfFrame();
+            this.gameObject.SetActive(false);
+            GameManager.instance.GameLoopingSet(GameSetting.GamePlaying);
         }
     }
 }
