@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.UI;
 
 public enum GameSetting
 {
@@ -36,7 +37,10 @@ public class GameManager : MonoBehaviour{
     public GameObject Background;
     public GameObject tile;
     public GameObject Player;
+    public GameObject UICam;
 
+    GameObject goTemp;
+    GameObject mainBackGroundObj;
     public GameSetting gameSetting;
 
 
@@ -69,16 +73,12 @@ public class GameManager : MonoBehaviour{
 	}
     void init()
     {
-        GameObject goTemp = Instantiate(Background) as GameObject;
-        GameObject goTemp_tile = Instantiate(tile) as GameObject;
-        dotBlueTemp = Instantiate(Resources.Load("dotBlueTemp")) as GameObject;
-
-        goTemp.transform.parent = MainCam.gameObject.transform;
-        goTemp_tile.transform.parent = goTemp.transform;
-        dotBlueTemp.transform.parent = MainCam.gameObject.transform;
-
-        Player = Instantiate(Player, new Vector2(StartPosX, StartPosY), Quaternion.identity) as GameObject;
-        Player.AddComponent<GameController>();
+        goTemp = Instantiate(Background) as GameObject; //뒷 배경 생성
+        mainBackGroundObj = Instantiate(Resources.Load("mainBackground")) as GameObject;
+        mainBackGroundObj.transform.SetParent(UICam.transform);
+        mainBackGroundObj.transform.localScale = new Vector3(1, 1, 1);
+        mainBackGroundObj.transform.localPosition = new Vector3(-10, -1, 0);
+        mainBackGroundObj.AddComponent<BtnManager>();
     }
     public void GameLoopingSet(GameSetting gameSetting)
     {
@@ -114,14 +114,25 @@ public class GameManager : MonoBehaviour{
     void gameStart()
     {
         Debug.Log("=====게임 시작=======");
+        mainBackGroundObj.SetActive(false);
+        GameObject goTemp_tile = Instantiate(tile) as GameObject;
+        dotBlueTemp = Instantiate(Resources.Load("dotBlueTemp")) as GameObject;
+
+        goTemp.transform.parent = MainCam.gameObject.transform;
+        goTemp_tile.transform.parent = goTemp.transform;
+        dotBlueTemp.transform.parent = MainCam.gameObject.transform;
+
+        Player = Instantiate(Player, new Vector2(StartPosX, StartPosY), Quaternion.identity) as GameObject;
+        Player.AddComponent<GameController>();
 
         ObjectPool.DotBlueCapacity = 1;
         ObjectPool.CreateObject("dotBlue", dotBlueTemp);
-        dotBluePositionRandom = RandomFunction(Random.Range(0, 9));
-        ObjectPool.Instantiate("dotBlue", dotBluePosition[dotBluePositionRandom], Quaternion.identity);
         playingFirst = true;
+        dotBluePositionRandom = RandomFunction(Random.Range(0, 9));
+
+        GameLoopingSet(GameSetting.GamePlaying);
     }
-    IEnumerator gamePlaying()
+    public IEnumerator gamePlaying()
     {
         Debug.Log("======게임 실행중========");
         yield return new WaitForSeconds(0.5f);

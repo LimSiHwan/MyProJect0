@@ -14,8 +14,11 @@ public class dotBlue : MonoBehaviour {
     {
         if (col.gameObject.CompareTag("Player"))
         {
-            this.gameObject.SetActive(false);
-            GameManager.instance.GameLoopingSet(GameSetting.GamePlaying);
+            if(GameManager.instance.gameSetting != GameSetting.GamePause && GameManager.instance.gameSetting != GameSetting.GameSet)
+            {
+                GameManager.instance.GameLoopingSet(GameSetting.GamePlaying);
+                this.gameObject.SetActive(false);
+            }
         }
     }
 }

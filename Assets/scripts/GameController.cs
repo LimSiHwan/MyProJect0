@@ -16,7 +16,6 @@ public class GameController : MonoBehaviour {
     
     void Start()
     {
-        GameManager.instance.GameLoopingSet(GameSetting.GameStart); //게임이 시작했다면 나중에 수정.
         Moves = false;
         startPos = transform.position;
     }
@@ -32,7 +31,8 @@ public class GameController : MonoBehaviour {
 
         if (Moves)
         {
-            PlayerMove(h, v);
+            if(GameManager.instance.gameSetting == GameSetting.GamePlaying)
+                PlayerMove(h, v);
         }
         
 	}
