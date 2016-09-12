@@ -7,12 +7,26 @@ public class ObjectPool : MonoBehaviour
     static Dictionary<string, List<GameObject>> pool = new Dictionary<string, List<GameObject>>();
     
     public static int DotBlueCapacity = 0;
-     
+    public static int DotBlackCapacity = 0; 
+
     public static void CreateObject(string key, GameObject parent)
     {
         List<GameObject> ObjList = new List<GameObject>();
 
         for (int i = 0; i < DotBlueCapacity; i++)
+        {
+            GameObject InstanceObj = Instantiate(Resources.Load(key)) as GameObject;
+            InstanceObj.transform.parent = parent.transform;
+            InstanceObj.SetActive(false);
+            ObjList.Add(InstanceObj);
+        }
+        pool.Add(key, ObjList);
+    }
+    public static void CreateBlackObject(string key, GameObject parent)
+    {
+        List<GameObject> ObjList = new List<GameObject>();
+
+        for (int i = 0; i < DotBlackCapacity; i++)
         {
             GameObject InstanceObj = Instantiate(Resources.Load(key)) as GameObject;
             InstanceObj.transform.parent = parent.transform;

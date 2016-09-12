@@ -11,7 +11,6 @@ public enum GameSetting
     GamePlaying,
     GameSet
 }
-
 public class GameManager : MonoBehaviour{
 
     private static GameManager _instance;
@@ -45,6 +44,7 @@ public class GameManager : MonoBehaviour{
 
 
     GameObject dotBlueTemp; //dotblue를 담는 부모오브젝트
+    GameObject dotBlackTemp; //dotblack을 담는 부모오브젝트
 
     Vector2[] dotBluePosition =
     {
@@ -66,6 +66,19 @@ public class GameManager : MonoBehaviour{
     int NextPosition;
     int NextPositionTemp;
 
+    string[] BlackPos = { "UP", "DOWN", "RIGHT", "LEFT" };
+    float spawnDelayTime;
+    public float SpawnDelayTime
+    {
+        get
+        {
+            return spawnDelayTime;
+        }
+        set
+        {
+            spawnDelayTime = value;
+        }
+    }
     void Start ()
     {
         if(gameSetting == GameSetting.GameInit)
@@ -115,18 +128,35 @@ public class GameManager : MonoBehaviour{
     {
         Debug.Log("=====게임 시작=======");
         mainBackGroundObj.SetActive(false);
+
+        GameObject Score = Instantiate(Resources.Load("Score")) as GameObject;
+        Score.transform.SetParent(UICam.transform);
+        Score.transform.localScale = new Vector3(1, 1, 1);
+        Score.transform.localPosition = new Vector3(0, 504, 0);
+
         GameObject goTemp_tile = Instantiate(tile) as GameObject;
         dotBlueTemp = Instantiate(Resources.Load("dotBlueTemp")) as GameObject;
+        dotBlackTemp = Instantiate(Resources.Load("dotBlackTemp")) as GameObject;
 
         goTemp.transform.parent = MainCam.gameObject.transform;
         goTemp_tile.transform.parent = goTemp.transform;
         dotBlueTemp.transform.parent = MainCam.gameObject.transform;
+        dotBlackTemp.transform.parent = MainCam.gameObject.transform;
 
         Player = Instantiate(Player, new Vector2(StartPosX, StartPosY), Quaternion.identity) as GameObject;
         Player.AddComponent<GameController>();
 
         ObjectPool.DotBlueCapacity = 1;
         ObjectPool.CreateObject("dotBlue", dotBlueTemp);
+
+        ObjectPool.DotBlackCapacity = 10;
+        ObjectPool.CreateBlackObject("UPDOWN_Enemy", dotBlackTemp);
+        ObjectPool.CreateBlackObject("DOWNUP_Enemy", dotBlackTemp);
+        ObjectPool.CreateBlackObject("RIGHTLEFT_Enemy", dotBlackTemp);
+        ObjectPool.CreateBlackObject("LEFTRIGHT_Enemy", dotBlackTemp);
+
+        SpawnDelayTime = 1.0f;
+        StartCoroutine(blackSpawn());
         playingFirst = true;
         dotBluePositionRandom = RandomFunction(Random.Range(0, 9));
 
@@ -143,6 +173,27 @@ public class GameManager : MonoBehaviour{
 
         NextPositionTemp = NextPosition;
         ObjectPool.Instantiate("dotBlue", dotBluePosition[NextPosition], Quaternion.identity);
+    }
+    IEnumerator blackSpawn()
+    {
+        yield return new WaitForSeconds(SpawnDelayTime);
+        string blackPos = BlackPos[Random.Range(0, 4)];
+        switch (blackPos)
+        {
+            case "UP":
+                ObjectPool.Instantiate("DOWNUP_Enemy", new Vector2(Random.Range(-1, 2), -3), Quaternion.identity);
+                break;
+            case "DOWN":
+                ObjectPool.Instantiate("UPDOWN_Enemy", new Vector2(Random.Range(-1, 2), 3), Quaternion.identity);
+                break;
+            case "RIGHT":
+                ObjectPool.Instantiate("RIGHTLEFT_Enemy", new Vector2(3, Random.Range(-1, 2)), Quaternion.identity);
+                break;
+            case "LEFT":
+                ObjectPool.Instantiate("LEFTRIGHT_Enemy", new Vector2(-3, Random.Range(-1,2)), Quaternion.identity);
+                break;
+        }
+        StartCoroutine(blackSpawn());
     }
     void gameSet()
     {
