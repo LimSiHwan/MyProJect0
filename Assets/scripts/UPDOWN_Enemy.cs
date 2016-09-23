@@ -9,7 +9,7 @@ public class UPDOWN_Enemy : Enemy {
         Vector2 Direction = ChangeDirection(Vector2.down);
         transform.Translate(Direction * Time.deltaTime * speed);
         
-        if(transform.position.y <= -3)
+        if(transform.position.y <= -5)
         {
             SetFalse(this.gameObject);
         }

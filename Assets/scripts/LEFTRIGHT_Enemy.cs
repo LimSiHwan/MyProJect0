@@ -9,7 +9,7 @@ public class LEFTRIGHT_Enemy : Enemy {
         Vector2 Direction = ChangeDirection(Vector2.right);
         transform.Translate(Direction * Time.deltaTime * speed);
 
-        if (transform.position.x >= 3)
+        if (transform.position.x >= 5)
         {
             SetFalse(this.gameObject);
         }

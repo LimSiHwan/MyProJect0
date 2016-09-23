@@ -11,7 +11,16 @@ public enum GameSetting
     GamePlaying,
     GameSet
 }
-public class GameManager : MonoBehaviour{
+
+public enum GameStage
+{
+    Stage1 = 1,
+    Stage2,
+    Stage3,
+    Stage4,
+    Stage5
+}
+public partial class GameManager : MonoBehaviour{
 
     private static GameManager _instance;
     public static GameManager instance
@@ -29,22 +38,30 @@ public class GameManager : MonoBehaviour{
     {
         _instance = this;
     }
+
     const int StartPosX = 0;
     const int StartPosY = 0;
 
     public GameObject MainCam;
-    public GameObject Background;
+    public GameObject[] Background;
     public GameObject tile;
     public GameObject Player;
     public GameObject UICam;
 
-    GameObject goTemp;
+    public GameObject[] goTemp = new GameObject[5];
     GameObject mainBackGroundObj;
     public GameSetting gameSetting;
-
+    public GameStage stage;
 
     GameObject dotBlueTemp; //dotblue를 담는 부모오브젝트
     GameObject dotBlackTemp; //dotblack을 담는 부모오브젝트
+
+
+    //스코어
+    Text BestScore;
+    Text CurrentScore;
+    Text Level;
+    int score;
 
     Vector2[] dotBluePosition =
     {
@@ -86,7 +103,7 @@ public class GameManager : MonoBehaviour{
 	}
     void init()
     {
-        goTemp = Instantiate(Background) as GameObject; //뒷 배경 생성
+        goTemp[0] = Instantiate(Background[0]) as GameObject; //뒷 배경 생성
         mainBackGroundObj = Instantiate(Resources.Load("mainBackground")) as GameObject;
         mainBackGroundObj.transform.SetParent(UICam.transform);
         mainBackGroundObj.transform.localScale = new Vector3(1, 1, 1);
@@ -116,12 +133,42 @@ public class GameManager : MonoBehaviour{
     }
     private int RandomFunction(int preRandom)
     {
+        randomList.Clear();
+
         for(int i = 0; i < 9; i++)
         {
             randomList.Add(i);
         }
-        randomList.Remove(preRandom);
-        int nextRandom = Random.Range(randomList[0], randomList[randomList.Count - 1]);
+        for(int i = 0; i<randomList.Count; i++)
+        {
+            if(randomList[i] == preRandom)
+            {
+                randomList.Remove(i);
+            }
+        }
+        int nextRandom = randomList[Random.Range(0, randomList.Count - 1)];
+        return nextRandom;
+    }
+    private int RandomFunction(int preRandom, int ok)
+    {
+        List<int> randomBlack = new List<int>();
+        randomBlack.Clear();
+        randomBlack.Add(-1);
+        randomBlack.Add(0);
+        randomBlack.Add(1);
+
+        int nextRandom = 0;
+
+        for(int i = 0; i < randomBlack.Count; i++)
+        {
+            if (preRandom == randomBlack[i])
+            {
+                if (i + 1 > 2)
+                    nextRandom = randomBlack[0];
+                else
+                    nextRandom = randomBlack[i + 1];
+            }
+        }
         return nextRandom;
     }
     void gameStart()
@@ -132,14 +179,18 @@ public class GameManager : MonoBehaviour{
         GameObject Score = Instantiate(Resources.Load("Score")) as GameObject;
         Score.transform.SetParent(UICam.transform);
         Score.transform.localScale = new Vector3(1, 1, 1);
-        Score.transform.localPosition = new Vector3(0, 504, 0);
+        Score.transform.localPosition = new Vector3(20, 504, 0);
+
+        BestScore = Score.transform.FindChild("BestScore").GetComponent<Text>();
+        CurrentScore = Score.transform.FindChild("CurrentScore").GetComponent<Text>();
+        Level = Score.transform.FindChild("Level").GetComponent<Text>();
 
         GameObject goTemp_tile = Instantiate(tile) as GameObject;
+        goTemp_tile.transform.parent = MainCam.transform;
         dotBlueTemp = Instantiate(Resources.Load("dotBlueTemp")) as GameObject;
         dotBlackTemp = Instantiate(Resources.Load("dotBlackTemp")) as GameObject;
 
-        goTemp.transform.parent = MainCam.gameObject.transform;
-        goTemp_tile.transform.parent = goTemp.transform;
+        goTemp[0].transform.parent = MainCam.gameObject.transform;
         dotBlueTemp.transform.parent = MainCam.gameObject.transform;
         dotBlackTemp.transform.parent = MainCam.gameObject.transform;
 
@@ -156,45 +207,69 @@ public class GameManager : MonoBehaviour{
         ObjectPool.CreateBlackObject("LEFTRIGHT_Enemy", dotBlackTemp);
 
         SpawnDelayTime = 1.0f;
-        StartCoroutine(blackSpawn());
+       
         playingFirst = true;
         dotBluePositionRandom = RandomFunction(Random.Range(0, 9));
 
         GameLoopingSet(GameSetting.GamePlaying);
+        StartCoroutine(blackSpawn());
     }
     public IEnumerator gamePlaying()
     {
-        Debug.Log("======게임 실행중========");
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.2f);
         if (playingFirst)
+        {
+            yield return new WaitForSeconds(0.5f);
             NextPosition = RandomFunction(dotBluePositionRandom);
+            score = 0;
+            playingFirst = false;
+        }
         else
-            NextPosition = RandomFunction(NextPositionTemp);
+        {
+            score += 1;
+            NextPosition = RandomFunction(NextPositionTemp);         
+        }
+
+        CurrentScore.text = score.ToString();
+        if(System.Convert.ToInt32(BestScore.text) <= score)
+        {
+            BestScore.text = score.ToString();
+        }
+
+        if (score == 0)
+        {
+            stage = GameStage.Stage1;
+        }
+        if (score == 10)
+        {
+            stage = GameStage.Stage2;
+            goTemp[1] = Instantiate(Background[1]);
+            goTemp[1].transform.parent = MainCam.transform;
+        }
+        if (score == 20)
+        {
+            stage = GameStage.Stage3;
+            goTemp[2] = Instantiate(Background[2]);
+            goTemp[2].transform.parent = MainCam.transform;   
+        }
+        if(score == 30)
+        {
+            stage = GameStage.Stage4;
+            goTemp[3] = Instantiate(Background[3]);
+            goTemp[3].transform.parent = MainCam.transform;
+        }
+        if(score == 40)
+        {
+            stage = GameStage.Stage5;
+            goTemp[4] = Instantiate(Background[4]);
+            goTemp[4].transform.parent = MainCam.transform;
+        } 
 
         NextPositionTemp = NextPosition;
+       
         ObjectPool.Instantiate("dotBlue", dotBluePosition[NextPosition], Quaternion.identity);
     }
-    IEnumerator blackSpawn()
-    {
-        yield return new WaitForSeconds(SpawnDelayTime);
-        string blackPos = BlackPos[Random.Range(0, 4)];
-        switch (blackPos)
-        {
-            case "UP":
-                ObjectPool.Instantiate("DOWNUP_Enemy", new Vector2(Random.Range(-1, 2), -3), Quaternion.identity);
-                break;
-            case "DOWN":
-                ObjectPool.Instantiate("UPDOWN_Enemy", new Vector2(Random.Range(-1, 2), 3), Quaternion.identity);
-                break;
-            case "RIGHT":
-                ObjectPool.Instantiate("RIGHTLEFT_Enemy", new Vector2(3, Random.Range(-1, 2)), Quaternion.identity);
-                break;
-            case "LEFT":
-                ObjectPool.Instantiate("LEFTRIGHT_Enemy", new Vector2(-3, Random.Range(-1,2)), Quaternion.identity);
-                break;
-        }
-        StartCoroutine(blackSpawn());
-    }
+
     void gameSet()
     {
 
