@@ -48,7 +48,8 @@ public partial class GameManager : MonoBehaviour{
     public GameObject Player;
     public GameObject UICam;
 
-    public GameObject[] goTemp = new GameObject[5];
+    public GameObject preBackgroundTemp;
+    public GameObject nextBackgroundTemp;
     GameObject mainBackGroundObj;
     public GameSetting gameSetting;
     public GameStage stage;
@@ -56,7 +57,8 @@ public partial class GameManager : MonoBehaviour{
     GameObject dotBlueTemp; //dotblue를 담는 부모오브젝트
     GameObject dotBlackTemp; //dotblack을 담는 부모오브젝트
 
-
+    int stageIndex = 0; //스테이지
+    int backgroundIndex = 0;//배경
     //스코어
     Text BestScore;
     Text CurrentScore;
@@ -83,7 +85,7 @@ public partial class GameManager : MonoBehaviour{
     int NextPosition;
     int NextPositionTemp;
 
-    string[] BlackPos = { "UP", "DOWN", "RIGHT", "LEFT" };
+    string[] BlackPos = { "UP", "DOWN", "RIGHT", "LEFT", "LEFTUP","LEFTDOWN","RIGHTUP","RIGHTDOWN" };
     float spawnDelayTime;
     public float SpawnDelayTime
     {
@@ -103,11 +105,11 @@ public partial class GameManager : MonoBehaviour{
 	}
     void init()
     {
-        goTemp[0] = Instantiate(Background[0]) as GameObject; //뒷 배경 생성
+        preBackgroundTemp = Instantiate(Background[0]) as GameObject; //뒷 배경 생성
         mainBackGroundObj = Instantiate(Resources.Load("mainBackground")) as GameObject;
         mainBackGroundObj.transform.SetParent(UICam.transform);
         mainBackGroundObj.transform.localScale = new Vector3(1, 1, 1);
-        mainBackGroundObj.transform.localPosition = new Vector3(-10, -1, 0);
+        mainBackGroundObj.transform.localPosition = new Vector3(-10, -130, 0);
         mainBackGroundObj.AddComponent<BtnManager>();
     }
     public void GameLoopingSet(GameSetting gameSetting)
@@ -190,7 +192,7 @@ public partial class GameManager : MonoBehaviour{
         dotBlueTemp = Instantiate(Resources.Load("dotBlueTemp")) as GameObject;
         dotBlackTemp = Instantiate(Resources.Load("dotBlackTemp")) as GameObject;
 
-        goTemp[0].transform.parent = MainCam.gameObject.transform;
+        preBackgroundTemp.transform.parent = MainCam.gameObject.transform;
         dotBlueTemp.transform.parent = MainCam.gameObject.transform;
         dotBlackTemp.transform.parent = MainCam.gameObject.transform;
 
@@ -205,6 +207,10 @@ public partial class GameManager : MonoBehaviour{
         ObjectPool.CreateBlackObject("DOWNUP_Enemy", dotBlackTemp);
         ObjectPool.CreateBlackObject("RIGHTLEFT_Enemy", dotBlackTemp);
         ObjectPool.CreateBlackObject("LEFTRIGHT_Enemy", dotBlackTemp);
+        ObjectPool.CreateBlackObject("LEFTUP_Enemy", dotBlackTemp);
+        ObjectPool.CreateBlackObject("LEFTDOWN_Enemy", dotBlackTemp);
+        ObjectPool.CreateBlackObject("RIGHTUP_Enemy", dotBlackTemp);
+        ObjectPool.CreateBlackObject("RIGHTDOWN_Enemy", dotBlackTemp); 
 
         SpawnDelayTime = 1.0f;
        
@@ -243,30 +249,37 @@ public partial class GameManager : MonoBehaviour{
         if (score == 10)
         {
             stage = GameStage.Stage2;
-            goTemp[1] = Instantiate(Background[1]);
-            goTemp[1].transform.parent = MainCam.transform;
         }
         if (score == 20)
         {
             stage = GameStage.Stage3;
-            goTemp[2] = Instantiate(Background[2]);
-            goTemp[2].transform.parent = MainCam.transform;   
         }
         if(score == 30)
         {
             stage = GameStage.Stage4;
-            goTemp[3] = Instantiate(Background[3]);
-            goTemp[3].transform.parent = MainCam.transform;
         }
         if(score == 40)
         {
             stage = GameStage.Stage5;
-            goTemp[4] = Instantiate(Background[4]);
-            goTemp[4].transform.parent = MainCam.transform;
         } 
-
+        if(score % 10 == 0 || score == 0)
+        {
+            stageIndex++;
+            Level.text = "Level " + stageIndex.ToString();
+            if(stageIndex > 1)
+            {
+                backgroundIndex++;
+                nextBackgroundTemp = Instantiate(Background[backgroundIndex]);
+                nextBackgroundTemp.transform.parent = MainCam.transform;
+                if (backgroundIndex > 3)
+                    backgroundIndex = 0;
+            }
+            if(stageIndex == 5)
+            {
+                stage = GameStage.Stage5;
+            }
+        }
         NextPositionTemp = NextPosition;
-       
         ObjectPool.Instantiate("dotBlue", dotBluePosition[NextPosition], Quaternion.identity);
     }
 

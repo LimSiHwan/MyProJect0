@@ -31,6 +31,7 @@ public class GameController : MonoBehaviour {
 
         if (Moves)
         {
+
             if(GameManager.instance.gameSetting == GameSetting.GamePlaying)
                 PlayerMove(h, v);
         }
@@ -38,6 +39,8 @@ public class GameController : MonoBehaviour {
 	}
     void PlayerMove(float h, float v)
     {
+    #if UNITY_EDITOR
+   
         if (h == -1) //가로
         {
             if(transform.position.x >= startPos.x)
@@ -70,5 +73,9 @@ public class GameController : MonoBehaviour {
                 Moves = false;
             }
         }
+#endif
+#if UNITY_ANDROID
+
+#endif
     }
 }

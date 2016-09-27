@@ -3,7 +3,7 @@ using System.Collections;
 
 public abstract class Enemy : MonoBehaviour{
     
-    public static int speed = 3;
+    public static float speed = 3;
     Vector2 DirectionPos;
 
     int randomPos;
